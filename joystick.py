@@ -25,52 +25,60 @@ tiltMotor = mh.getStepper(50, 2)
 
 def rotateGross(value, center_pos, motor):
 	motor.setSpeed(60)
+	dir = "NONE"
 	if value < (center_pos - 50):
 		dir = Adafruit_MotorHAT.FORWARD
-		motor.step(1, dir, Adafruit_MotorHAT.DOUBLE)
-        	print("Coarse Rotate Left")
 	elif value >= (center_pos - 50) and value <= (center_pos + 50):
-		print("No Coarse Rotation")
+		return "NONE"
         else:
 		dir = Adafruit_MotorHAT.BACKWARD
-		motor.step(1, dir, Adafruit_MotorHAT.DOUBLE)
 		print("Coarse Rotate Right")
-#	print("Z_AXIS EVENT - VAL: {}".format(keyevent.event.value))		
+	return [1, dir, Adafruit_MotorHAT.DOUBLE]		
 
 def rotateFine(value, center_pos, motor):
 	motor.setSpeed(60)
+	dir = "NONE"
 	if value < (center_pos - 25):
 		dir = Adafruit_MotorHAT.FORWARD
-		motor.step(1, dir, Adafruit_MotorHAT.DOUBLE)
-		print("Fine Rotate Left")
 	elif value >= (center_pos - 25) and value <= (center_pos + 25):
-		print("No Fine Rotation")
+		return "NONE"
 	else:
 		dir = Adafruit_MotorHAT.BACKWARD
-		motor.step(1, dir, Adafruit_MotorHAT.DOUBLE)
-		print("Fine Rotate Right")
-#	print("Y_AXIS EVENT - VAL: {}".format(keyevent.event.value))
+	return [1, dir, Adafruit_MotorHAT.DOUBLE]
 
 def tilt(value, center_pos, motor):
 	motor.setSpeed(60)
+	dir = "NONE"
 	if value < (center_pos - 50):
 		dir = Adafruit_MotorHAT.FORWARD
-		motor.step(1, dir, Adafruit_MotorHAT.DOUBLE)
-        	print("Tilt Downward")
-	elif value <= (center_pos - 50) and value >= (center_pos + 50):
-		print("No Rotation")
+	elif value >= (center_pos - 50) and value <= (center_pos + 50):
+		return "NONE"
         else:
 		dir = Adafruit_MotorHAT.BACKWARD
-		motor.step(1, dir, Adafruit_MotorHAT.DOUBLE)
-		print("Tilt Upward")
-#	print("X_AXIS EVENT - VAL: {}".format(keyevent.event.value))
+	return [1, dir, Adafruit_MotorHAT.DOUBLE]
 
-for event in gamepad.read_loop():
-	if event.type == ecodes.EV_ABS:
+rotationCommand = "NONE"
+tiltCommand = "NONE"
+while True:
+	event = gamepad.read_one()
+	if event != None and event.type == ecodes.EV_ABS:
 		event = categorize(event).event
 		if event.code == 5:
-			rotateFine(event.value, 256, rotationMotor)
+			rotationCommand = rotateFine(event.value, 256, rotationMotor)
 		elif event.code == 1:
-			tilt(event.value, 512, tiltMotor)
+			tiltCommand = tilt(event.value, 512, tiltMotor)
 		elif event.code == 0:
-			rotateGross(event.value, 512, rotationMotor)
+			rotationCommand = rotateGross(event.value, 512, rotationMotor)
+		else:
+			rotationCommand = "NONE"
+			tiltCommand = "NONE"
+	if rotationCommand != "NONE":
+		numSteps = rotationCommand[0]
+		direction = rotationCommand[1]
+		stepType = rotationCommand[2]
+		rotationMotor.step(numSteps, direction, stepType)
+	if tiltCommand != "NONE":
+		numSteps = tiltCommand[0]
+		direction = tiltCommand[1]
+		stepType = tiltCommand[2]
+		tiltMotor.step(numSteps, direction, stepType)
