@@ -2,18 +2,21 @@
 import sys
 sys.path.append('/usr/local/lib/python3.4/site-packages')
 
-from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor, Adafruit_StepperMotor
 from evdev import InputDevice, categorize, ecodes
-import time
+from time import sleep
 import atexit
-import threading
+import multiprocessing as pc
 import random
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 import mainwindow
+import armature
 
-mh = Adafruit_MotorHAT()
+FINE_X_AXIS_EVENT = 5 
+GROSS_X_AXIS_EVENT = 0
+Y_AXIS_EVENT = 1
+programIsOpen = True
 
 class RaspberryJam(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
@@ -22,74 +25,55 @@ class RaspberryJam(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 		self.setupUi(self)
 		self.resize(760,520)
 
-def turnOffMotors():
-	mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
-	mh.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
-	mh.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
-	mh.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
-
-def rotateGross(value, center_pos, motor):
-	motor.setSpeed(60)
-	dir = "NONE"
-	if value < (center_pos - 50):
-		dir = Adafruit_MotorHAT.FORWARD
-	elif value >= (center_pos - 50) and value <= (center_pos + 50):
-		return "NONE"
-	else:
-		dir = Adafruit_MotorHAT.BACKWARD
-		print("Coarse Rotate Right")
-	return dir
-
-def rotateFine(value, center_pos, motor):
-	motor.setSpeed(60)
-	dir = "NONE"
-	if value < (center_pos - 25):
-		dir = Adafruit_MotorHAT.FORWARD
-	elif value >= (center_pos - 25) and value <= (center_pos + 25):
-		return "NONE"
-	else:
-		dir = Adafruit_MotorHAT.BACKWARD
-	return dir
-
-def tilt(value, center_pos, motor):
-	motor.setSpeed(60)
-	dir = "NONE"
-	if value < (center_pos - 50):
-		dir = Adafruit_MotorHAT.FORWARD
-	elif value >= (center_pos - 50) and value <= (center_pos + 50):
-		return "NONE"
-	else:
-		dir = Adafruit_MotorHAT.BACKWARD
-	return dir
-
-def stepper_worker(rotmotor, tiltmotor, stepnum, stepstyle):
-	while True:
+def controlArmature(arm):
+	gamepad = InputDevice('/dev/input/event3')
+	rotationCommand = "NONE"
+	tiltCommand = "NONE"
+	while programIsOpen == True:
 		event = gamepad.read_one()
 		if event != None and event.type == ecodes.EV_ABS:
 			event = categorize(event).event
-			if event.code == 5:
-				rotationCommand = rotateFine(event.value, 256, rotationMotor)
-			elif event.code == 1:
-				tiltCommand = tilt(event.value, 512, tiltMotor)
-			elif event.code == 0:
-				rotationCommand = rotateGross(event.value, 512, rotationMotor)
-			else:
-				rotationCommand = "NONE"
-				tiltCommand = "NONE"
-		if rotationCommand != "NONE":
-			direction = rotationCommand
-			rotationMotor.step(stepnum, direction, stepstyle)
-		if tiltCommand != "NONE":
-			direction = tiltCommand
-			tiltMotor.step(stepnum, direction, stepstyle)
+			if event.code == FINE_X_AXIS_EVENT:
+				if event.value < (256 - 26):
+					rotationCommand = "LEFT"
+				elif event.value > (256 + 26):
+					rotationCommand = "RIGHT"
+				else:
+					rotationCommand = "NONE"
+			elif event.code == Y_AXIS_EVENT:
+				if event.value < (512 - 51):
+					tiltCommand = "DOWN"
+				elif event.value > (512 + 51):
+					tiltCommand = "UP"
+				else:
+					tiltCommand = "NONE"
+
+			elif event.code == GROSS_X_AXIS_EVENT:
+				if event.value < (512 - 51):
+					rotationCommand = "LEFT"
+				elif event.value > (512 + 51):
+					rotationCommand = "RIGHT"
+				else:
+					rotationCommand = "NONE"
+		if rotationCommand is "LEFT":
+			arm.rotateLeft()
+		elif rotationCommand is "RIGHT":
+			arm.rotateRight()
+		if tiltCommand is "DOWN":
+			arm.tiltDown()
+		elif tiltCommand is "UP":
+			arm.tiltUp()
+	run_once = True
 
 def main():
-#	gamepad = InputDevice('/dev/input/event0')
-#	atexit.register(turnOffMotors)
-#	rotationMotor = mh.getStepper(50, 1)
-#	tiltMotor = mh.getStepper(50, 2)
+	global programIsOpen
 	app = QtWidgets.QApplication(sys.argv)
 	form = RaspberryJam()
+
+	arm = armature.Armature()
+	process = pc.Process( target=controlArmature, args=(arm,))
+	process.start()
+
 	form.show()
 	form.setFixedSize(760,520)
 	screen = app.desktop()
@@ -99,10 +83,9 @@ def main():
 	x = screenWidth / 2 - (760 / 2)
 	y = screenHeight / 2 - (520 / 2)
 	form.move(x,y)
+	
 	app.exec_()
-#	rotationCommand = "NONE"
-#	tiltCommand = "NONE"
-#	st1 = threading.Thread( target=stepper_worker, args=(rotationMotor, tiltMotor, 1, Adafruit_MotorHAT.DOUBLE,) )
+	programIsOpen = False
 
 if __name__ == '__main__':
 	main()
