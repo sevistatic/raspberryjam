@@ -20,6 +20,7 @@ class RaspberryJam(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 	def __init__(self, parent=None):
 		super(RaspberryJam, self).__init__(parent)
 		self.setupUi(self)
+		self.resize(760,520)
 
 def turnOffMotors():
 	mh.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
@@ -90,6 +91,14 @@ def main():
 	app = QtWidgets.QApplication(sys.argv)
 	form = RaspberryJam()
 	form.show()
+	form.setFixedSize(760,520)
+	screen = app.desktop()
+	geometry = screen.availableGeometry()
+	screenWidth = geometry.width()
+	screenHeight = geometry.height()
+	x = screenWidth / 2 - (760 / 2)
+	y = screenHeight / 2 - (520 / 2)
+	form.move(x,y)
 	app.exec_()
 #	rotationCommand = "NONE"
 #	tiltCommand = "NONE"
