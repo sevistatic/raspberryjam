@@ -12,6 +12,7 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 
 import mainwindow
 import armature
+import jammer
 
 FINE_X_AXIS_EVENT = 5 
 GROSS_X_AXIS_EVENT = 0
@@ -25,44 +26,58 @@ class RaspberryJam(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 		self.setupUi(self)
 		self.resize(760,520)
 
-def controlArmature(arm):
+def controlArmature(arm, jam):
 	gamepad = InputDevice('/dev/input/event3')
 	rotationCommand = "NONE"
 	tiltCommand = "NONE"
 	while programIsOpen == True:
 		event = gamepad.read_one()
-		if event != None and event.type == ecodes.EV_ABS:
-			event = categorize(event).event
-			if event.code == FINE_X_AXIS_EVENT:
-				if event.value < (256 - 26):
-					rotationCommand = "LEFT"
-				elif event.value > (256 + 26):
-					rotationCommand = "RIGHT"
-				else:
-					rotationCommand = "NONE"
-			elif event.code == Y_AXIS_EVENT:
-				if event.value < (512 - 51):
-					tiltCommand = "DOWN"
-				elif event.value > (512 + 51):
-					tiltCommand = "UP"
-				else:
-					tiltCommand = "NONE"
-
-			elif event.code == GROSS_X_AXIS_EVENT:
-				if event.value < (512 - 51):
-					rotationCommand = "LEFT"
-				elif event.value > (512 + 51):
-					rotationCommand = "RIGHT"
-				else:
-					rotationCommand = "NONE"
+		if event != None:
+			if event.type == ecodes.EV_ABS:
+				event = categorize(event).event
+				if event.code == FINE_X_AXIS_EVENT:
+					if event.value < (256 - 26):
+						rotationCommand = "LEFT"
+					elif event.value > (256 + 26):
+						rotationCommand = "RIGHT"
+					else:
+						rotationCommand = "NONE"
+				elif event.code == Y_AXIS_EVENT:
+					if event.value < (512 - 51):
+						tiltCommand = "DOWN"
+					elif event.value > (512 + 51):
+						tiltCommand = "UP"
+					else:
+						tiltCommand = "NONE"
+				elif event.code == GROSS_X_AXIS_EVENT:
+					if event.value < (512 - 51):
+						rotationCommand = "LEFT"
+					elif event.value > (512 + 51):
+						rotationCommand = "RIGHT"
+					else:
+						rotationCommand = "NONE"
+			elif event.type == ecodes.EV_KEY:
+				event = categorize(event)
+				if event.keycode[1] is "BTN_TRIGGER":
+					if event.keystate is 1:
+						jam.start()
+#						print("TRIGGER IN")
+					elif event.keystate is 0:
+						jam.stop()
+#						print("TRIGGER OUT")
 		if rotationCommand is "LEFT":
-			arm.rotateLeft()
+#			arm.rotateLeft()
+			pass
 		elif rotationCommand is "RIGHT":
-			arm.rotateRight()
+#			arm.rotateRight()
+			pass
 		if tiltCommand is "DOWN":
-			arm.tiltDown()
+#			arm.tiltDown()
+			pass
 		elif tiltCommand is "UP":
-			arm.tiltUp()
+#			arm.tiltUp()
+			pass
+
 	run_once = True
 
 def main():
@@ -71,7 +86,9 @@ def main():
 	form = RaspberryJam()
 
 	arm = armature.Armature()
-	process = pc.Process( target=controlArmature, args=(arm,))
+	jam = jammer.Jammer()
+
+	process = pc.Process( target=controlArmature, args=(arm,jam))
 	process.start()
 
 	form.show()
