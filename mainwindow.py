@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import cameratools as ct
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -14,10 +15,10 @@ class Ui_MainWindow(object):
         MainWindow.resize(400, 300)
         self.centralWidget = QtWidgets.QWidget(MainWindow)
         self.centralWidget.setObjectName("centralWidget")
-        self.cameraFrame = QtWidgets.QWidget(self.centralWidget)
-        self.cameraFrame.setGeometry(QtCore.QRect(0, 0, 281, 261))
-        self.cameraFrame.setStyleSheet("QWidget {background-color: red}")
-        self.cameraFrame.setObjectName("cameraFrame")
+        self.cameraLabel = ct.CameraWidget(self.centralWidget)
+        self.cameraLabel.setGeometry(QtCore.QRect(0, 0, 281, 261))
+        self.cameraLabel.setStyleSheet("CameraWidget {background-color: red}")
+        self.cameraLabel.setObjectName("cameraFrame")
         self.rightCol = QtWidgets.QWidget(self.centralWidget)
         self.rightCol.setGeometry(QtCore.QRect(280, 0, 120, 261))
         self.rightCol.setStyleSheet("QWidget {background-color: blue}")
