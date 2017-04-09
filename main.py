@@ -4,7 +4,6 @@ sys.path.append('/usr/local/lib/python3.4/site-packages')
 
 from evdev import InputDevice, categorize, ecodes
 from time import sleep
-import atexit
 import multiprocessing as pc
 import random
 
@@ -27,7 +26,10 @@ class RaspberryJam(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 		self.resize(760,520)
 
 def controlArmature(arm, jam):
-	gamepad = InputDevice('/dev/input/event3')
+	#Depending on how the devices are connected, the Saitek Joystick
+	#could be any device from event0 to event4
+	gamepad = InputDevice('/dev/input/event4')
+	#print(gamepad)
 	rotationCommand = "NONE"
 	tiltCommand = "NONE"
 	while programIsOpen == True:
@@ -59,38 +61,43 @@ def controlArmature(arm, jam):
 			elif event.type == ecodes.EV_KEY:
 				event = categorize(event)
 				if event.keycode[1] is "BTN_TRIGGER":
+#The following print statements are for proving the code boundaries
+#for the module work without the hardware connected
 					if event.keystate is 1:
 						jam.start()
-#						print("TRIGGER IN")
+						#print("TRIGGER IN")
 					elif event.keystate is 0:
 						jam.stop()
-#						print("TRIGGER OUT")
+						#print("TRIGGER OUT")
 		if rotationCommand is "LEFT":
-#			arm.rotateLeft()
-			pass
+			arm.rotateLeft()
+#			print("ROTATE LEFT")
 		elif rotationCommand is "RIGHT":
-#			arm.rotateRight()
-			pass
+			arm.rotateRight()
+#			print("ROTATE RIGHT")
 		if tiltCommand is "DOWN":
-#			arm.tiltDown()
-			pass
+			arm.tiltDown()
+#			print("TILT DOWN")
 		elif tiltCommand is "UP":
-#			arm.tiltUp()
-			pass
-
-	run_once = True
+			arm.tiltUp()
+#			print("TILT UP")
 
 def main():
+	#This is the flag for ending the user input thread when the
+	#application is closed
 	global programIsOpen
 	app = QtWidgets.QApplication(sys.argv)
 	form = RaspberryJam()
 
+	#initialize hardware interface modules
 	arm = armature.Armature()
 	jam = jammer.Jammer()
 
+	#begin user input thread
 	process = pc.Process( target=controlArmature, args=(arm,jam))
 	process.start()
 
+	#center and fix the size of the application window
 	form.show()
 	form.setFixedSize(760,520)
 	screen = app.desktop()
@@ -102,6 +109,7 @@ def main():
 	form.move(x,y)
 	
 	app.exec_()
+	#Set flag after program closes
 	programIsOpen = False
 
 if __name__ == '__main__':
