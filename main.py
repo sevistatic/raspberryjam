@@ -16,7 +16,6 @@ import jammer
 FINE_X_AXIS_EVENT = 5 
 GROSS_X_AXIS_EVENT = 0
 Y_AXIS_EVENT = 1
-programIsOpen = True
 
 class RaspberryJam(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
@@ -24,6 +23,17 @@ class RaspberryJam(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 		super(RaspberryJam, self).__init__(parent)
 		self.setupUi(self)
 		self.resize(760,520)
+		self.overlayToggle.clicked.connect(self.toggleOverlay)
+		self.actionQuit.triggered.connect(self.quitProgram)
+
+	def quitProgram(self):
+		for child in pc.active_children():
+			child.terminate()
+		self.cameraLabel.destroy()
+		quit()
+
+	def toggleOverlay(self):
+		self.cameraLabel.toggleOverlay()
 
 def controlArmature(arm, jam):
 	#Depending on how the devices are connected, the Saitek Joystick
@@ -32,7 +42,7 @@ def controlArmature(arm, jam):
 	#print(gamepad)
 	rotationCommand = "NONE"
 	tiltCommand = "NONE"
-	while programIsOpen == True:
+	while  True:
 		event = gamepad.read_one()
 		if event != None:
 			if event.type == ecodes.EV_ABS:
@@ -85,7 +95,6 @@ def controlArmature(arm, jam):
 def main():
 	#This is the flag for ending the user input thread when the
 	#application is closed
-	global programIsOpen
 	app = QtWidgets.QApplication(sys.argv)
 	form = RaspberryJam()
 
@@ -109,8 +118,7 @@ def main():
 	form.move(x,y)
 	
 	app.exec_()
-	#Set flag after program closes
-	programIsOpen = False
+	form.quitProgram()
 
 if __name__ == '__main__':
 	main()

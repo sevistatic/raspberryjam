@@ -4,10 +4,13 @@ import RPi.GPIO as GPIO
 #GPIO Pin used for the jammer
 JAMMER = 21
 
+#setup GPIO using BCM numbering system
+#(the value written on the Raspberry Pi)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(JAMMER, GPIO.OUT, initial=GPIO.LOW)
+
 class Jammer(object):
-	def __init__(self):
-		#setup GPIO using BCM numbering system
-		#(the value written on the Raspberry Pi)
+	def __init(self):
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(JAMMER, GPIO.OUT, initial=GPIO.LOW)
 

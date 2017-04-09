@@ -12,11 +12,12 @@ PUL1 = 16
 DIR2 = 19
 PUL2 = 20
 
+#setup GPIO using BCM numbering
+#(the values written on the Raspberry Pi 3)
+GPIO.setmode(GPIO.BCM)
+
 class Armature(object):
 	def __init__(self, parent=None):
-		#setup GPIO using BCM numbering
-		#(the values written on the Raspberry Pi 3)
-		GPIO.setmode(GPIO.BCM)
 	
 		GPIO.setup(DIR1, GPIO.OUT, initial=GPIO.LOW)
 		GPIO.setup(PUL1, GPIO.OUT, initial=GPIO.LOW)
