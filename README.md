@@ -30,3 +30,11 @@ navigate to the install directory
 
 run the program
 'python main.py'
+
+
+Known bugs:
+ - sometimes the camera feed does not initialize when the program starts. Restarting the program usually fixes this.
+ - warnings about cleaning up GPIO pins that have not yet been set up sometimes show when the program ends
+ - warnings about setting up GPIO pins which have not yet been deallocated sometimes show when the program starts. This is related to the above issue
+ - libjpeg warnings about JPEG corruption show on every frame update. this is a bug in the libjpeg libraries with respect to video captures
+ - the warning `libEGL warning: DRI2: failed to authenticate` shows when the program starts. It does not affect performance.
