@@ -36,24 +36,24 @@ class Armature(object):
 	def rotateRight(self):
 		#Set the direction of the motor
 		GPIO.output(DIR1, GPIO.LOW)
-		step(PUL1)
+		self.step(PUL1)
 
 	def rotateLeft(self):
 		#Set the direction of the motor
 		GPIO.output(DIR1, GPIO.HIGH)
-		step(PUL1)
+		self.step(PUL1)
 
 	def tiltDown(self):
 		#Set the direction of the motor
 		GPIO.output(DIR2, GPIO.LOW)
-		step(PUL2)
+		self.step(PUL2)
 
 	def tiltUp(self):
 		#Set the direction of the motor
 		GPIO.output(DIR2, GPIO.HIGH)
-		step(PUL2)
+		self.step(PUL2)
 
-	def step(motor):
+	def step(self,motor):
 		#Step the motor
 		GPIO.output(motor, GPIO.HIGH)
 		sleep(0.001)

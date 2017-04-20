@@ -38,8 +38,8 @@ class RaspberryJam(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 def controlArmature(arm, jam):
 	#Depending on how the devices are connected, the Saitek Joystick
 	#could be any device from event0 to event4
-	gamepad = InputDevice('/dev/input/event4')
-	#print(gamepad)
+	gamepad = InputDevice('/dev/input/event2')
+	print(gamepad)
 	rotationCommand = "NONE"
 	tiltCommand = "NONE"
 	while  True:
